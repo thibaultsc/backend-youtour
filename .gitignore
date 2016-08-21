@@ -2,3 +2,4 @@ backend/settings.py
 backend/settings.pyc
 params.py
 **.pyc
+ beyt/migrations/*
