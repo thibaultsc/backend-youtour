@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from .models import Tour, Activity, Variation
+from .models import Tour, Activity, Variation, TranslateTour, Location
 from rest_framework import serializers, viewsets
 
 # Serializers define the API representation.
@@ -13,8 +13,18 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     
+#TranslateTour Serializers
+class TranslateTourSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = TranslateTour
+        
+class TranslateTourViewSet(viewsets.ModelViewSet):
+    queryset = TranslateTour.objects.all()
+    serializer_class = TranslateTourSerializer
+    
 # TOUR Serializers define the API representation.
 class TourSerializer(serializers.HyperlinkedModelSerializer):
+    locales = TranslateTourSerializer(many=True, read_only=True)
     class Meta:
         model = Tour
 
@@ -43,3 +53,16 @@ class VariationSerializer(serializers.HyperlinkedModelSerializer):
 class VariationViewSet(viewsets.ModelViewSet):
     queryset = Variation.objects.all()
     serializer_class = VariationSerializer
+    
+# Location Serializers define the API representation.
+class LocationSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Location
+
+# Variation ViewSets define the view behavior.
+class LocationViewSet(viewsets.ModelViewSet):
+    queryset = Location.objects.all()
+    serializer_class = LocationSerializer
+    
+    
+    
