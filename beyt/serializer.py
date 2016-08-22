@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from .models import Tour, Activity, Variation, TranslateTour, Location, TourActivity, TourClean
+from .models import Tour, Activity, Variation, TranslateTour, Location, TourActivity
 from rest_framework import serializers, viewsets, generics
 
 # Serializers define the API representation.
@@ -79,27 +79,4 @@ class LocationViewSet(viewsets.ModelViewSet):
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
     
-    
-class TourCleanSerializer(serializers.Serializer):
-    title = serializers.CharField(max_length=255)
-    slug = serializers.CharField(max_length=255)
-    hotelPickupAccepted = serializers.BooleanField()
-    
-# Variation ViewSets define the view behavior.
-class  TourCleanViewSet(generics.ListCreateAPIView):
-    queryset = Tour.objects.all()
-    query = []
-    serializer_class = TourCleanSerializer
-    permission_classes = (IsAdminUser,)
-
-    def list(self, request):
-        # Note the use of `get_queryset()` instead of `self.queryset`
-        queryset = self.get_queryset()
-        query = self.get_query()
-        for r in queryset:
-          r = TourClean(r,'en')
-          query.append(r)
-          value 
-        serializer = TourCleanSerializer(query, many=True)
-        return Response(serializer.data)
     

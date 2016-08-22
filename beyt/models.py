@@ -97,13 +97,6 @@ class TourActivity(TimeStampedModel):
     class Meta:
       verbose_name_plural = "Tour activities"
 
-# class to cleanse to add the Title, Slug and description to the tour
-class TourClean(object):
-  def __init__(self, tour, lang):
-    self.__dict__ = tour.__dict__
-    self.title = tour.titleSlugDescription(lang).title
-    self.slug = tour.titleSlugDescription(lang).slug
-    self.description = tour.titleSlugDescription(lang).description
 
     
   
