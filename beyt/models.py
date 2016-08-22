@@ -4,6 +4,12 @@ from django.db import models
 from django_extensions.db.models import (
 TitleSlugDescriptionModel, TimeStampedModel, TitleDescriptionModel)
 
+TYPE_CHOICE = (
+    ('1', 'Default'),
+    ('2', 'Human'),
+    ('3', 'Machine'),
+)
+
 #The model Location 
 class Location(TimeStampedModel):
     streetAddress	= models.CharField(max_length=200, null=True)
@@ -22,16 +28,19 @@ class Location(TimeStampedModel):
 class TranslateLocation(TimeStampedModel):
     location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='locales')
     language = models.CharField(max_length=2, default='en')
-    type = models.CharField(max_length=2, default='aa')
+    type = models.CharField(max_length=2,choices=TYPE_CHOICE,default='1',)
     name = models.CharField(max_length=200, null=True)
     details = models.CharField(max_length=200, null=True)
     def __unicode__(self):
       return  self.streetAddress + ' - ' + self.addressLocality
-    
+    class Meta:
+      verbose_name_plural = "translatelocations"
+
+
 #The model Tour represent a full packaged offer from an agency
-class Tour (TitleSlugDescriptionModel, TimeStampedModel):
+class Tour (TimeStampedModel):
   def __unicode__(self):
-    return  ' : ' + self.title
+    return  self.locales.all().get(type='1').title
   departureLocation = models.ForeignKey(Location, on_delete=models.CASCADE, null=True, related_name='departure_location')
   departureTime = models.TimeField(null=True)
   arrivalLocation = models.ForeignKey(Location, on_delete=models.CASCADE, null=True, related_name='arrival_location')
@@ -40,21 +49,32 @@ class Tour (TitleSlugDescriptionModel, TimeStampedModel):
   hotelPickupAccepted = models.BooleanField(default=False)
   price = models.DecimalField(max_digits=20, decimal_places=2, null=True)
   currency = models.CharField(max_length=3, null=True)
-  defaultLanguage = models.CharField(max_length=2, default='en')
-  
+  sizeMin = models.IntegerField(null=True)
+  sizeMax = models.IntegerField(null=True)
+  def titleSlugDescription(self, lg):
+    queryset = self.locales.filter(language=lg).order_by('type', '-modified')
+    if queryset.count() > 0 :
+      return queryset[0]
+    else:
+      return self.locales.filter(type='1').order_by('-modified')[0]
+    return "error"
 
+  
 #The model Tour represent a full packaged offer from an agency
 class TranslateTour (TitleSlugDescriptionModel, TimeStampedModel):
   def __unicode__(self):
-    return  ' : ' + self.title
+    return  self.title
   tour = models.ForeignKey(Tour, on_delete=models.CASCADE, related_name='locales')
   language = models.CharField(max_length=2, default='en')
-  type = models.CharField(max_length=2, default='aa')
+  type = models.CharField(max_length=2,choices=TYPE_CHOICE,default='1',)
+
 
 #The model Activity represent a component of a Tour
 class Activity (TitleSlugDescriptionModel, TimeStampedModel):
   def __unicode__(self):
     return  self.title
+  class Meta:
+    verbose_name_plural = "Activities"
 
 #The model Variation represent different option the traveler can 
 #choose in an activity (different hotels for ex)
@@ -68,10 +88,22 @@ class Variation (TitleSlugDescriptionModel, TimeStampedModel):
 #The model TourActivity is the intermediate model to create a 
 #Many to many relationship btw Tour and Activity
 class TourActivity(TimeStampedModel):
-    tour = models.ForeignKey(Tour, on_delete=models.CASCADE)
-    activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
+    tour = models.ForeignKey(Tour, on_delete=models.CASCADE, related_name='activities')
+    activity = models.ForeignKey(Activity, on_delete=models.CASCADE, related_name='tours')
     order = models.IntegerField()
     description = models.CharField(max_length=200, null=True)
     def __unicode__(self):
-      return  self.tour.title + ' - ' + self.activity.title
+      return  self.activity.title
+    class Meta:
+      verbose_name_plural = "Tour activities"
 
+# class to cleanse to add the Title, Slug and description to the tour
+class TourClean(object):
+  def __init__(self, tour, lang):
+    self.__dict__ = tour.__dict__
+    self.title = tour.titleSlugDescription(lang).title
+    self.slug = tour.titleSlugDescription(lang).slug
+    self.description = tour.titleSlugDescription(lang).description
+
+    
+  
