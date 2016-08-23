@@ -40,7 +40,7 @@ class TranslateLocation(TimeStampedModel):
 #The model Tour represent a full packaged offer from an agency
 class Tour (TimeStampedModel):
   def __unicode__(self):
-    return  self.locales.all().get(type='1').title
+    return  self.locales.all().filter(type='1')[0].title
   departureLocation = models.ForeignKey(Location, on_delete=models.CASCADE, null=True, related_name='departure_location')
   departureTime = models.TimeField(null=True)
   arrivalLocation = models.ForeignKey(Location, on_delete=models.CASCADE, null=True, related_name='arrival_location')
@@ -96,7 +96,12 @@ class TourActivity(TimeStampedModel):
       return  self.activity.title
     class Meta:
       verbose_name_plural = "Tour activities"
-
-
-    
-  
+      
+      
+# class to cleanse to add the Title, Slug and description to the tour
+class TourLanguage(object):
+  def __init__(self, tour, lang):
+    self.__dict__ = tour.__dict__
+    self.title = tour.titleSlugDescription(lang).title
+    self.slug = tour.titleSlugDescription(lang).slug
+    self.description = tour.titleSlugDescription(lang).description
