@@ -9,10 +9,15 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = User
         fields = ('url', 'username', 'email', 'is_staff')
-    
-#TranslateTour Serializers
+        
+#FilteredList Serializers to filter a List that should be serialized
+class FilteredListSerializer(serializers.ListSerializer):
+    def to_representation(self, data):
+        data = data.filter(type = '1')
+        return super(FilteredListSerializer, self).to_representation(data)
 class TranslateTourSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
+        list_serializer_class = FilteredListSerializer
         model = TranslateTour
         fields = ('title', 'description', 'slug', 'language', 'type')
 
@@ -52,8 +57,5 @@ class LocationSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Location
     
-class TourCleanSerializer(serializers.Serializer):
-    title = serializers.CharField(max_length=255)
-    slug = serializers.CharField(max_length=255)
-    hotelPickupAccepted = serializers.BooleanField()
+
     

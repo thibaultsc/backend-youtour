@@ -105,3 +105,4 @@ class TourLanguage(object):
     self.title = tour.titleSlugDescription(lang).title
     self.slug = tour.titleSlugDescription(lang).slug
     self.description = tour.titleSlugDescription(lang).description
+    self.departureLocation = tour.departureLocation
